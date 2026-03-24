@@ -40,7 +40,6 @@ document.addEventListener('click', (e) => {
 /* ─── SMOOTH SCROLL with offset ─── */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', (e) => {
-    // Los botones con data-modal los maneja el delegador de modales — no interferir
     if (anchor.hasAttribute('data-modal')) {
       e.preventDefault();
       return;
@@ -95,7 +94,6 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, observerOptions);
 
-// Add fade-in to key elements
 const animatedSelectors = [
   '.what-card',
   '.benefit-card',
@@ -112,7 +110,6 @@ const animatedSelectors = [
 
 document.querySelectorAll(animatedSelectors.join(', ')).forEach((el, index) => {
   el.classList.add('fade-in');
-  // Stagger sibling elements
   const parent = el.parentElement;
   const siblings = [...parent.children].filter(c => c.classList.contains(el.classList[0]));
   const siblingIndex = siblings.indexOf(el);
@@ -159,7 +156,6 @@ const Modal = (() => {
     const overlay = document.getElementById('modal-' + id);
     if (!overlay) return;
 
-    // Cargar iframe de Google Calendar de forma lazy
     if (id === 'calendario') {
       const iframe = document.getElementById('googleCalendarFrame');
       if (iframe && iframe.getAttribute('src') === 'about:blank') {
@@ -167,7 +163,6 @@ const Modal = (() => {
         if (realSrc && realSrc !== 'REEMPLAZAR_CON_TU_URL_DE_GOOGLE_CALENDAR') {
           iframe.src = realSrc;
         } else {
-          // Mostrar mensaje de configuración pendiente
           const loading = document.getElementById('calendarLoading');
           if (loading) {
             loading.innerHTML = `
@@ -195,7 +190,6 @@ const Modal = (() => {
     document.body.classList.add('modal-open');
     activeModal = overlay;
 
-    // Foco accesible
     const closeBtn = overlay.querySelector('.modal-close');
     if (closeBtn) closeBtn.focus();
   }
@@ -230,7 +224,6 @@ document.addEventListener('click', (e) => {
   if (trigger) {
     e.preventDefault();
     const modalId = trigger.getAttribute('data-modal');
-    // Calendario → WhatsApp directo
     if (modalId === 'calendario') {
       window.open(WA_URL, '_blank', 'noopener,noreferrer');
       return;
@@ -245,7 +238,6 @@ document.addEventListener('click', (e) => {
     return;
   }
 
-  // Clic en overlay (fuera del modal)
   if (e.target.classList.contains('modal-overlay')) {
     Modal.closeActive();
   }
@@ -259,27 +251,14 @@ document.addEventListener('keydown', (e) => {
 
 /* ═══════════════════════════════════════════════════
    EMAILJS CONFIG
-   ─────────────────────────────────────────────────
-   1. Ve a https://www.emailjs.com y crea una cuenta
-   2. Conecta tu Gmail en "Email Services"
-   3. Crea una plantilla en "Email Templates"
-      Variables que usa el formulario:
-        {{nombre}}, {{empresa}}, {{email}},
-        {{telefono}}, {{interes}}, {{mensaje}}
-   4. Reemplaza los 3 valores de abajo:
-      - EMAILJS_PUBLIC_KEY  → Pestaña "Account" → Public Key
-      - EMAILJS_SERVICE_ID  → Pestaña "Email Services" → Service ID
-      - EMAILJS_TEMPLATE_ID → Pestaña "Email Templates" → Template ID
 ═══════════════════════════════════════════════════ */
 
-const EMAILJS_PUBLIC_KEY  = 'REEMPLAZAR_PUBLIC_KEY';
-const EMAILJS_SERVICE_ID  = 'REEMPLAZAR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'REEMPLAZAR_TEMPLATE_ID';
+const EMAILJS_PUBLIC_KEY  = 'SpMyfZiXRVcGwjEp-';
+const EMAILJS_SERVICE_ID  = 'service_rg5ux97';
+const EMAILJS_TEMPLATE_ID = 'template_i3p89vg';
 
-// Inicializar EmailJS (solo si ya está configurado)
-if (EMAILJS_PUBLIC_KEY !== 'REEMPLAZAR_PUBLIC_KEY') {
-  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-}
+// Inicializar EmailJS
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
 
 /* ═══════════════════════════════════════════════════
@@ -294,7 +273,6 @@ const successEmail    = document.getElementById('successEmail');
 const btnNewMessage   = document.getElementById('btnNewMessage');
 const btnRetry        = document.getElementById('btnRetry');
 
-/* ─── Validación de campos ─── */
 function validateField(input) {
   const id      = input.id;
   const value   = input.value.trim();
@@ -320,7 +298,6 @@ function validateForm() {
   return valid;
 }
 
-// Validación en tiempo real al salir de cada campo
 if (contactForm) {
   contactForm.querySelectorAll('input, textarea').forEach(input => {
     input.addEventListener('blur', () => validateField(input));
@@ -330,7 +307,6 @@ if (contactForm) {
   });
 }
 
-/* ─── Mostrar / ocultar estados del form ─── */
 function showFormState(state) {
   if (!contactForm) return;
   const states = { form: contactForm, success: formSuccess, error: formErrorState };
@@ -339,17 +315,15 @@ function showFormState(state) {
   if (state === 'form') { contactForm.style.display = 'flex'; }
 }
 
-/* ─── Envío del formulario ─── */
 if (contactForm) {
   contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
-    // Estado cargando
     const btnText    = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
-    submitBtn.disabled   = true;
+    submitBtn.disabled       = true;
     btnText.style.display    = 'none';
     btnLoading.style.display = 'flex';
 
@@ -365,29 +339,20 @@ if (contactForm) {
     };
 
     try {
-      if (EMAILJS_PUBLIC_KEY === 'REEMPLAZAR_PUBLIC_KEY') {
-        // Modo demostración: simular envío exitoso para testing local
-        await new Promise(r => setTimeout(r, 1400));
-        if (successEmail) successEmail.textContent = emailValue;
-        showFormState('success');
-        console.info('[JND] EmailJS no configurado — en producción conecta tus credenciales.');
-      } else {
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-        if (successEmail) successEmail.textContent = emailValue;
-        showFormState('success');
-      }
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      if (successEmail) successEmail.textContent = emailValue;
+      showFormState('success');
     } catch (err) {
       console.error('[JND] Error EmailJS:', err);
       showFormState('error');
     } finally {
-      submitBtn.disabled      = false;
-      btnText.style.display   = 'flex';
+      submitBtn.disabled       = false;
+      btnText.style.display    = 'flex';
       btnLoading.style.display = 'none';
     }
   });
 }
 
-/* ─── Botones de reset del form ─── */
 if (btnNewMessage) {
   btnNewMessage.addEventListener('click', () => {
     contactForm.reset();
@@ -404,27 +369,16 @@ if (btnRetry) {
 
 /* ═══════════════════════════════════════════════════
    CHAT WIDGET — JND AI SYSTEMS
-   ─────────────────────────────────────────────────
-   INTEGRACIÓN CON N8N:
-   1. En n8n crea un nodo "Webhook" (método POST)
-   2. Copia la URL del webhook (modo Production)
-   3. Pégala en N8N_WEBHOOK_URL abajo
-   4. El chat enviará: { message, sessionId, timestamp, pageUrl }
-   5. Tu flujo n8n debe responder con JSON: { response: "texto" }
-      Opcionalmente también puedes devolver: { response, action }
-      donde action puede ser: "open_calendar" | "open_form" | null
 ═══════════════════════════════════════════════════ */
 
 const N8N_WEBHOOK_URL = 'https://jnd-projects-n8n.ng9sc3.easypanel.host/webhook/5a676e14-2854-4f37-8383-51d166d4813b/chat';
 
-/* ─── Helpers ─── */
 const $ = id => document.getElementById(id);
 
 function chatTimestamp() {
   return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ID de sesión único por visita (persiste en sessionStorage)
 function getSessionId() {
   let sid = sessionStorage.getItem('jnd_chat_sid');
   if (!sid) {
@@ -434,24 +388,21 @@ function getSessionId() {
   return sid;
 }
 
-/* ─── Estado del chat ─── */
 const chatState = {
   open:       false,
   waitingBot: false,
   sessionId:  getSessionId(),
 };
 
-/* ─── Elementos DOM ─── */
-const chatFab        = $('chatFab');
-const chatWindow     = $('chatWindow');
-const chatClose      = $('chatClose');
-const chatMessages   = $('chatMessages');
-const chatInput      = $('chatInput');
-const chatSendBtn    = $('chatSendBtn');
-const chatBadge      = $('chatBadge');
+const chatFab         = $('chatFab');
+const chatWindow      = $('chatWindow');
+const chatClose       = $('chatClose');
+const chatMessages    = $('chatMessages');
+const chatInput       = $('chatInput');
+const chatSendBtn     = $('chatSendBtn');
+const chatBadge       = $('chatBadge');
 const chatSuggestions = $('chatSuggestions');
 
-/* ─── Abrir / cerrar chat ─── */
 function openChat() {
   chatState.open = true;
   chatWindow.classList.add('open');
@@ -480,14 +431,12 @@ function hideBadge() {
 chatFab.addEventListener('click', () => chatState.open ? closeChat() : openChat());
 chatClose.addEventListener('click', closeChat);
 
-/* ─── Scroll al último mensaje ─── */
 function scrollToBottom() {
   requestAnimationFrame(() => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   });
 }
 
-/* ─── Renderizar un mensaje en pantalla ─── */
 function renderMessage(role, text, isError = false) {
   const isBot  = role === 'bot';
   const time   = chatTimestamp();
@@ -506,14 +455,12 @@ function renderMessage(role, text, isError = false) {
 
   const bubbleEl = document.createElement('div');
   bubbleEl.className = 'chat-bubble';
-  // Permitir saltos de línea simples
   bubbleEl.innerHTML = text.replace(/\n/g, '<br>');
 
   msgEl.appendChild(avatarEl);
   msgEl.appendChild(bubbleEl);
   chatMessages.appendChild(msgEl);
 
-  // Timestamp entre bloques (cada mensaje del bot)
   if (isBot) {
     const timeEl = document.createElement('p');
     timeEl.className = 'chat-msg-time';
@@ -525,7 +472,6 @@ function renderMessage(role, text, isError = false) {
   return msgEl;
 }
 
-/* ─── Indicador de "escribiendo..." ─── */
 function showTyping() {
   const typingEl = document.createElement('div');
   typingEl.className = 'chat-typing';
@@ -546,9 +492,7 @@ function hideTyping() {
   if (el) el.remove();
 }
 
-/* ─── Enviar mensaje al webhook de n8n ─── */
 async function sendToN8n(userMessage) {
-  // Formato esperado por el nodo "When chat message received" de n8n
   const payload = {
     action:    'sendMessage',
     chatInput: userMessage,
@@ -565,7 +509,6 @@ async function sendToN8n(userMessage) {
 
   const data = await res.json();
 
-  // n8n responde con { output: "..." } — también soporta otros formatos
   if (typeof data === 'string') return { response: data, action: null };
   return {
     response: data.output || data.response || data.message || data.text || 'Recibido.',
@@ -573,7 +516,6 @@ async function sendToN8n(userMessage) {
   };
 }
 
-/* ─── Procesar acción especial desde n8n ─── */
 function handleAction(action) {
   if (!action) return;
   if (action === 'open_calendar') {
@@ -584,23 +526,18 @@ function handleAction(action) {
   }
 }
 
-/* ─── Flujo principal: usuario envía mensaje ─── */
 async function handleUserMessage(text) {
   const trimmed = text.trim();
   if (!trimmed || chatState.waitingBot) return;
 
-  // Ocultar sugerencias tras el primer mensaje
   if (chatSuggestions) chatSuggestions.classList.add('hidden');
 
-  // Limpiar input
   chatInput.value = '';
   chatInput.style.height = 'auto';
   chatSendBtn.disabled = true;
 
-  // Mostrar burbuja del usuario
   renderMessage('user', trimmed);
 
-  // Bloquear mientras espera respuesta
   chatState.waitingBot = true;
   showTyping();
 
@@ -621,12 +558,9 @@ async function handleUserMessage(text) {
   }
 }
 
-/* ─── Eventos del input ─── */
 chatInput.addEventListener('input', () => {
-  // Auto-resize textarea
   chatInput.style.height = 'auto';
   chatInput.style.height = Math.min(chatInput.scrollHeight, 100) + 'px';
-  // Habilitar/deshabilitar botón
   chatSendBtn.disabled = !chatInput.value.trim() || chatState.waitingBot;
 });
 
@@ -639,7 +573,6 @@ chatInput.addEventListener('keydown', (e) => {
 
 chatSendBtn.addEventListener('click', () => handleUserMessage(chatInput.value));
 
-/* ─── Sugerencias rápidas ─── */
 if (chatSuggestions) {
   chatSuggestions.querySelectorAll('.chat-suggestion-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -648,13 +581,11 @@ if (chatSuggestions) {
   });
 }
 
-/* ─── Mensaje de bienvenida (se muestra al cargar) ─── */
 (function initWelcomeMessage() {
   setTimeout(() => {
     renderMessage('bot',
       '¡Hola! 👋 Bienvenido a JND AI SYSTEMS.\n\n¿En qué podemos ayudarte hoy? Puedo orientarte sobre nuestros servicios de automatización o ayudarte a agendar una llamada con nuestro equipo.'
     );
-    // Mostrar badge en el FAB si el chat está cerrado
     if (!chatState.open && chatBadge) {
       chatBadge.classList.remove('hidden');
     }
@@ -674,7 +605,6 @@ if (chatSuggestions) {
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
-  // Targets automáticos
   const selectors = [
     '.animate-on-scroll',
     '.section-header',
@@ -712,12 +642,6 @@ if (chatSuggestions) {
     requestAnimationFrame(update);
   }
 
-  const counters = [
-    { selector: '.hero-stat:nth-child(1) .stat-value', target: 24, suffix: '/7', skip: true },
-    { selector: '.hero-stat:nth-child(3) .stat-value', target: 0,  suffix: '',   skip: true },
-  ];
-
-  // Counter observer — activa al entrar en viewport
   const kpiObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -749,7 +673,6 @@ if (chatSuggestions) {
   const MOUSE_FORCE  = 0.12;
   const COLOR        = '0, 212, 255';
 
-  // Posición del mouse — escucha en el hero (el canvas tiene pointer-events:none)
   const mouse = { x: null, y: null };
   const heroSection = document.getElementById('hero');
   const mouseTarget  = heroSection || document;
@@ -786,7 +709,6 @@ if (chatSuggestions) {
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // ── Conexiones entre partículas ──
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
@@ -804,10 +726,7 @@ if (chatSuggestions) {
       }
     }
 
-    // ── Partículas con glow ──
     particles.forEach(p => {
-
-      // Repulsión desde el cursor
       if (mouse.x !== null) {
         const dx = p.x - mouse.x;
         const dy = p.y - mouse.y;
@@ -819,36 +738,29 @@ if (chatSuggestions) {
         }
       }
 
-      // Límite de velocidad
       const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
       if (speed > 1.2) { p.vx *= 1.2 / speed; p.vy *= 1.2 / speed; }
-      // Fricción solo cuando el mouse aceleró la partícula
       p.vx *= 0.98;
       p.vy *= 0.98;
-      // Velocidad mínima de flotación natural
       if (speed < 0.15) {
         p.vx += (Math.random() - 0.5) * 0.06;
         p.vy += (Math.random() - 0.5) * 0.06;
       }
 
-      // Mover partícula
       p.x += p.vx;
       p.y += p.vy;
       if (p.x < 0 || p.x > W) p.vx *= -1;
       if (p.y < 0 || p.y > H) p.vy *= -1;
 
-      // ── Glow fuerte ──
       ctx.save();
       ctx.shadowColor = `rgba(${COLOR}, 1)`;
       ctx.shadowBlur  = 20;
 
-      // Halo exterior
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${COLOR}, 0.18)`;
       ctx.fill();
 
-      // Núcleo brillante
       ctx.shadowBlur = 25;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -858,7 +770,6 @@ if (chatSuggestions) {
       ctx.restore();
     });
 
-    // ── Anillo de cursor ──
     if (mouse.x !== null) {
       ctx.save();
       ctx.beginPath();
@@ -880,7 +791,6 @@ if (chatSuggestions) {
     animId = requestAnimationFrame(draw);
   }
 
-  // Pausa cuando el hero no es visible (performance)
   const heroEl = document.getElementById('hero');
   const visObs = new IntersectionObserver(([e]) => {
     if (e.isIntersecting) { if (!animId) draw(); }
@@ -899,12 +809,10 @@ if (chatSuggestions) {
 document.querySelectorAll('.faq-question').forEach(btn => {
   btn.addEventListener('click', () => {
     const isOpen = btn.getAttribute('aria-expanded') === 'true';
-    // Cerrar todos
     document.querySelectorAll('.faq-question').forEach(b => {
       b.setAttribute('aria-expanded', 'false');
       b.nextElementSibling.classList.remove('open');
     });
-    // Abrir el clickeado si estaba cerrado
     if (!isOpen) {
       btn.setAttribute('aria-expanded', 'true');
       btn.nextElementSibling.classList.add('open');
@@ -916,14 +824,14 @@ document.querySelectorAll('.faq-question').forEach(btn => {
    EXIT INTENT POPUP
 ═══════════════════════════════════════════════════ */
 (function initExitIntent() {
-  const popup   = document.getElementById('exitIntentPopup');
-  const closeBtn = document.getElementById('exitPopupClose');
+  const popup      = document.getElementById('exitIntentPopup');
+  const closeBtn   = document.getElementById('exitPopupClose');
   const dismissBtn = document.getElementById('exitPopupDismiss');
-  const ctaBtn  = document.getElementById('exitPopupCTA');
+  const ctaBtn     = document.getElementById('exitPopupCTA');
   if (!popup) return;
 
   let shown = false;
-  const DELAY_MS = 8000; // no mostrar antes de 8 seg en la página
+  const DELAY_MS  = 8000;
   const startTime = Date.now();
 
   function show() {
@@ -939,16 +847,12 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     sessionStorage.setItem('jnd_exit_shown', '1');
   }
 
-  // No mostrar si ya se vio en esta sesión
   if (sessionStorage.getItem('jnd_exit_shown')) return;
 
   document.addEventListener('mouseleave', (e) => {
-    if (e.clientY <= 0 && (Date.now() - startTime) > DELAY_MS) {
-      show();
-    }
+    if (e.clientY <= 0 && (Date.now() - startTime) > DELAY_MS) show();
   });
 
-  // Mobile: mostrar al 75% de scroll
   let mobileFired = false;
   window.addEventListener('scroll', () => {
     if (mobileFired || shown) return;
@@ -959,12 +863,10 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     }
   }, { passive: true });
 
-  closeBtn && closeBtn.addEventListener('click', hide);
+  closeBtn   && closeBtn.addEventListener('click', hide);
   dismissBtn && dismissBtn.addEventListener('click', hide);
-  ctaBtn && ctaBtn.addEventListener('click', hide);
-  popup.addEventListener('click', (e) => {
-    if (e.target === popup) hide();
-  });
+  ctaBtn     && ctaBtn.addEventListener('click', hide);
+  popup.addEventListener('click', (e) => { if (e.target === popup) hide(); });
 })();
 
 /* ═══════════════════════════════════════════════════
@@ -978,9 +880,9 @@ document.querySelectorAll('.faq-question').forEach(btn => {
   let currentStep = 1;
   const TOTAL_STEPS = 4;
 
-  const progressBar = document.getElementById('quizProgressBar');
-  const resultDiv   = document.getElementById('quiz-result');
-  const resultText  = document.getElementById('quizResultText');
+  const progressBar     = document.getElementById('quizProgressBar');
+  const resultDiv       = document.getElementById('quiz-result');
+  const resultText      = document.getElementById('quizResultText');
   const resultHighlight = document.getElementById('quizResultHighlight');
 
   function updateProgress(step) {
@@ -1000,17 +902,16 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
     if (progressBar) progressBar.style.width = '100%';
 
-    // Generar resultado personalizado
-    const area    = answers[2] || 'tu operación';
-    const hours   = answers[3] || '';
-    const pain    = answers[4] || '';
-    const team    = answers[1] || '';
+    const area  = answers[2] || 'tu operación';
+    const hours = answers[3] || '';
+    const pain  = answers[4] || '';
+    const team  = answers[1] || '';
 
     const hoursMap = {
-      'Entre 5 y 15 horas':   'recuperar entre 5 y 15 horas semanales',
-      'Entre 15 y 30 horas':  'recuperar más de 15 horas semanales',
-      'Más de 30 horas':      'liberar más de 30 horas semanales de trabajo manual',
-      'Menos de 5 horas':     'optimizar los procesos clave'
+      'Entre 5 y 15 horas':  'recuperar entre 5 y 15 horas semanales',
+      'Entre 15 y 30 horas': 'recuperar más de 15 horas semanales',
+      'Más de 30 horas':     'liberar más de 30 horas semanales de trabajo manual',
+      'Menos de 5 horas':    'optimizar los procesos clave'
     };
     const saving = hoursMap[hours] || 'optimizar tus procesos';
 
@@ -1027,9 +928,8 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     if (resultDiv) resultDiv.style.display = 'block';
   }
 
-  // Reset quiz al abrir el modal
   quizOverlay.addEventListener('transitionend', (e) => {
-    if (e.target !== quizOverlay) return; // ignorar eventos de elementos hijos
+    if (e.target !== quizOverlay) return;
     if (!quizOverlay.classList.contains('active')) return;
     currentStep = 1;
     Object.keys(answers).forEach(k => delete answers[k]);
@@ -1038,29 +938,22 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     goToStep(1);
   });
 
-  // Manejar click en opciones
   document.querySelectorAll('.quiz-option').forEach(btn => {
     btn.addEventListener('click', () => {
       const step = parseInt(btn.getAttribute('data-step'));
       const val  = btn.getAttribute('data-value');
       answers[step] = val;
 
-      // Marcar visualmente
       btn.closest('.quiz-options').querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
 
-      // Avanzar al siguiente paso
       setTimeout(() => {
-        if (step < TOTAL_STEPS) {
-          goToStep(step + 1);
-        } else {
-          showResult();
-        }
+        if (step < TOTAL_STEPS) goToStep(step + 1);
+        else showResult();
       }, 350);
     });
   });
 
-  // Botón X — listener directo como respaldo
   const quizCloseBtn = quizOverlay.querySelector('.modal-close');
   if (quizCloseBtn) {
     quizCloseBtn.addEventListener('click', (e) => {
