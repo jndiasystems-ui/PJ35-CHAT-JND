@@ -253,9 +253,10 @@ document.addEventListener('keydown', (e) => {
    EMAILJS CONFIG
 ═══════════════════════════════════════════════════ */
 
-const EMAILJS_PUBLIC_KEY  = 'SpMyfZiXRVcGwjEp-';
-const EMAILJS_SERVICE_ID  = 'service_rg5ux97';
-const EMAILJS_TEMPLATE_ID = 'template_i3p89vg';
+const EMAILJS_PUBLIC_KEY        = 'SpMyfZiXRVcGwjEp-';
+const EMAILJS_SERVICE_ID        = 'service_rg5ux97';
+const EMAILJS_TEMPLATE_ID       = 'template_i3p89vg';
+const EMAILJS_AUTOREPLY_TEMPLATE = 'template_21k2avq';
 
 // Inicializar EmailJS
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
@@ -340,6 +341,7 @@ if (contactForm) {
 
     try {
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_AUTOREPLY_TEMPLATE, templateParams).catch(() => {});
       if (successEmail) successEmail.textContent = emailValue;
       showFormState('success');
     } catch (err) {
